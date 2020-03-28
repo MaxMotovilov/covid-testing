@@ -23,34 +23,72 @@ async function dataset() {
 		throw Error(`${rsp.status} ${rsp.statusText}`);
 	}
 
-	return (await rsp.json()).reduce(
-		(all, {state, positive, negative, pending, hospitalized}) => {
+	return rsp.json();
+}
+
+const highlight = (
+	(fadeout, highlighted) => state => {
+		if(state && fadeout) {
+			clearTimeout(fadeout);
+			fadeout = null;
+		}
+
+		if(highlighted!=state) {
+			if(highlighted) {
+				if(state) {
+					fillPopup(state);
+					highlighted = state;
+				} else if(!fadeout) {
+					fadeout = setTimeout( () => { document.body.className = ''; fadeout = highlighted = null; }, 2000 );
+				}
+			} else {
+				fillPopup(state);
+					highlighted = state;
+			document.body.className = 'show';
+			}
+		}
+	}
+)();
+
+let all;
+
+dataset().then( ds => {
+	all = ds.reduce(
+		(all, {state, positive, negative, pending, hospitalized, deathIncrease, hospitalizedIncrease, positiveIncrease, totalTestResultsIncrease}) => {
 			const
-				{pos=[], hsp=[]} = all[state] || {},
+				{pos=[], hsp=[], raw=[]} = all[state] || {},
 				tested = (positive||0) + (negative||0) + (pending||0);
 
 			if(positive && population[state]) {
 				const rate = hScale( 1000000 * tested / population[state] );
+
+				raw.push({
+					tested: totalTestResultsIncrease,
+					dead: deathIncrease,
+					positive: positiveIncrease,
+					hospitalized: hospitalizedIncrease
+				});
+
 				if(rate>=0) {
 					pos.unshift( [rate, vScale(positive/tested)] );
 					if(hospitalized)
 						hsp.unshift( [rate, vScale(hospitalized/tested)] );
-					all[state] = {pos, hsp}
 				}
+
+				all[state] = {pos, hsp, raw}
 			}
 
 			return all;
 		}, {}
 	);
-}
 
-dataset().then(
-	all => {
-		document.getElementById('data').innerHTML = Object.keys(all).map(
-			state => `<g class="trail ${state}">` + markers(all[state].pos, 'pos-rate', state) + markers(all[state].hsp, 'hsp-rate', state) + '</g>'
-		).join('');
-	}
-);
+	document.getElementById('data').innerHTML = Object.keys(all).map(
+		state => `<g class="trail ${state}">` + markers(all[state].pos, 'pos-rate', state) + markers(all[state].hsp, 'hsp-rate', state) + '</g>'
+	).join('');
+} );
+
+document.getElementById('data').addEventListener('mouseover', ({target}) => highlight(findParentWithClass(target, /\btrail\s*/)));
+document.getElementById('data').addEventListener('mouseout', ({target}) => { if(findParentWithClass(target, /\btrail\s*/)) highlight(null); });
 
 function markers(pts, mk, state) {
 	return pts.length ?
@@ -64,3 +102,43 @@ function text([x, y], str) {
 	return `<text x="${x}" y="${y}">${str}</text>`;
 }
 
+function findParentWithClass(elt, cls_regex) {
+	while(elt && elt.tagName.toLowerCase() != 'svg')
+		if(cls_regex.test(elt.className.baseVal))
+			return elt.className.baseVal.replace(cls_regex, '');
+		else
+			elt = elt.parentNode;
+	return null;
+}
+
+function fillPopup(state) {
+	document.getElementById('stateLabel').innerHTML = state;
+	document.getElementById('upper').innerHTML = barChart(all[state].raw, -300, 'tested', 'positive');
+	document.getElementById('lower').innerHTML = barChart(all[state].raw, 100, 'hospitalized', 'dead');
+}
+
+function barChart(data, height, ...fields) {
+	const
+		maxValue = fields.reduce( (sofar, field) => Math.max(sofar, Math.max(...data.map(x => x[field]))), 0 ),
+		width = Math.min( Math.floor(400/data.length), 9 ) - 2;
+
+	return maxValue ? fields.map(
+		field => data.map( ({[field]: value}, i) => {
+			const h = height * value/maxValue;
+			return `<rect class="${field}" x="${400 - (i+1)*width}" y="${Math.min(0, h)}" width="${width-2}" height="${Math.abs(h)}" />`;
+		} ).join('')
+	).join('') + fields.map(
+		field => {
+			let
+				maxFieldValue = Math.max(...data.map(x => x[field])),
+				h = height * maxFieldValue/maxValue;
+
+			return maxFieldValue ? data.map( ({[field]: value}, i) => {
+				if(value==maxFieldValue) {
+					maxFieldValue = -1;
+					return `<text x="${400 - i*width - (width+2)/2}" y="${h}">${value}</text>`;
+				} else return '';
+			} ).join('') : '';
+		}
+	).join('') : '';
+}

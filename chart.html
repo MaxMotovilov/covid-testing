@@ -7,81 +7,148 @@
 			}
 
 			.pane {
-				display: block;
 				position: relative;
 				width: 1200px;
 				height: 1200px;
 			}
 
-			.pane svg {
+			.popup {
+				display: none;
+				position: absolute;
+				width: 440px;
+				height: 440px;
+				right: 50px;
+				bottom: 200px;
+				background-color: #f0f0ff;
+			}
+
+			body.show .popup {
+				display: block;
+			}
+
+			svg {
 				position: absolute;
 			}
 
-			.pane svg.grid, .pane svg.data {
+			.pane>svg.grid, .pane>svg.data {
 				width: 1000px;
 				height: 1000px;
 				left: 200px;
 				top: 50px;
 			}
 
-			.pane svg.grid line.major {
+			.pane>svg.grid line.major {
 				stroke: #808080;
 			}
 
-			.pane svg.grid line.minor {
+			.pane>svg.grid line.minor {
 				stroke: #c0c0c0;
 			}
 
-			.pane svg.vertical {
+			.pane>svg.vertical {
 				width: 180px;
 				height: 1100px;
 				top: 6px;
 			}
 
-			.pane svg.vertical text {
+			.pane>svg.vertical text {
 				text-anchor: end;
 			}
 
-			.pane svg.horizontal {
+			.pane>svg.horizontal {
 				width: 1140px;
 				height: 180px;
 				top: 1000px;
 				left: 95px;
 			}
 
-			.pane svg.horizontal text {
+			.pane>svg.horizontal text {
 				text-anchor: middle;
 			}
 
-			.pane svg.axis text {
+			.pane>svg.axis text {
 				font-size: 16px;
 			}
 
-			.pane svg.data g.trail:hover {
+			.pane>svg.data g.trail:hover {
 				stroke: blue !important;
 			}
 
-			.pane svg.data g.trail polyline {
+			.pane>svg.data g.trail polyline {
 				stroke: none;
 			}
 
-			.pane svg.data g.trail text {
+			.pane>svg.data g.trail text {
 				visibility: hidden;
 				font-size: 12px;
-				stroke: blue;
-				vector-effect: non-scaling-size;
+				fill: blue;
 				transform: translate(3px,4px);
 				bottom: 6px;
 			}
 
-			.pane svg.data g.trail:hover polyline {
+			.pane>svg.data g.trail:hover polyline {
 				stroke: blue;
 			}
 
-			.pane svg.data g.trail:hover text {
+			.pane>svg.data g.trail:hover text {
 				visibility: visible;
 			}
 
+			.popup>div#stateLabel {
+				font-size: 36px;
+				font-weight: bold;
+				color: blue;
+				padding: 20px;
+			}
+
+			.popup>svg {
+				text-anchor: middle;
+				font-size: 12px;
+			}
+
+			.popup>svg.axis {
+				width: 400px;
+				height: 400px;
+				top: 20px;
+				left: 20px;
+			}
+
+			.popup>svg.data {
+				width: 440px;
+				height: 440px;
+			}
+
+			.popup>svg.axis line {
+				stroke: #808080;
+			}
+
+			.popup>svg.data g#upper text {
+				transform: translate(0,-4px);
+			}
+
+			.popup>svg.data g#lower text {
+				transform: translate(0,16px);
+			}
+
+			.popup>svg.data .tested {
+				stroke: #608060;
+				fill: #80e080;
+			}
+
+			.popup>svg.data .positive {
+				stroke: #c0c040;
+				fill: #f0f040;
+			}
+
+			.popup>svg.data .hospitalized {
+				stroke: #b08020;
+				fill: #ffb030;
+			}
+
+			.popup>svg.data .dead {
+				stroke: #b02010;
+				fill: #f03020;
+			}
 		</style>
 		<link rel="stylesheet" href="./states.css">
 	</head>
@@ -152,6 +219,18 @@
 				</defs>
 				<g id="data" />
 			</svg>
+			<div class="popup">
+				<svg class="axis" viewBox="0 0 400 400">
+					<g transform="translate(0 300)">
+						<line x1="0" x2="400" y1="0	" y2="0" stroke-width="3" />
+					</g>
+				</svg>
+				<svg class="data" viewBox="-20 -20 440 440">
+					<g id="upper" transform="translate(0 300)" stroke-width="1" />
+					<g id="lower" transform="translate(0 300)" stroke-width="1" />
+				</svg>
+				<div id="stateLabel"/>
+			</div>
 		</div>
 		<script src="./chart.js"></script>
 	</body>
