@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<title>COVID-19 testing progress based on covidtracking.com</title>
 		<style type="text/css">
 			body {
 				font-family: sans-serif;
@@ -10,6 +11,19 @@
 				position: relative;
 				width: 1200px;
 				height: 1200px;
+			}
+
+			.pane>.legend {
+				position: absolute;
+				left: 200px;
+			}
+
+			.pane>.legend span {
+				color: blue;
+			}
+
+			.pane>.legend.bottom {
+				bottom: 80px;
 			}
 
 			.popup {
@@ -130,24 +144,38 @@
 				transform: translate(0,16px);
 			}
 
-			.popup>svg.data .tested {
+			.popup svg .tested {
 				stroke: #608060;
 				fill: #80e080;
 			}
 
-			.popup>svg.data .positive {
+			.popup svg .positive {
 				stroke: #c0c040;
 				fill: #f0f040;
 			}
 
-			.popup>svg.data .hospitalized {
+			.popup svg .hospitalized {
 				stroke: #b08020;
 				fill: #ffb030;
 			}
 
-			.popup>svg.data .dead {
+			.popup svg .dead {
 				stroke: #b02010;
 				fill: #f03020;
+			}
+
+			.popup>.legend {
+				position: absolute;
+				left: 20px;
+				top: 160px;
+			}
+
+			.popup>.legend>svg {
+				position: absolute;
+				width: 22px;
+				height: 80px;
+				left: 90px;
+				top: 13px;
 			}
 		</style>
 		<link rel="stylesheet" href="./states.css">
@@ -229,8 +257,23 @@
 					<g id="upper" transform="translate(0 300)" stroke-width="1" />
 					<g id="lower" transform="translate(0 300)" stroke-width="1" />
 				</svg>
-				<div id="stateLabel"/>
+				<div id="stateLabel"></div>
+				<div class="legend">
+					<svg viewBox="-1 0 22 80">
+						<rect class="tested" x="0" width="20" y="7" height="7" />
+						<rect class="positive" x="0" width="20" y="27" height="7" />
+						<rect class="hospitalized" x="0" width="20" y="47" height="7" />
+						<rect class="dead" x="0" width="20" y="67" height="7" />
+					</svg>
+					<div><b>Daily values</b></div>
+					<div>Tested</div>
+					<div>Positive</div>
+					<div>Hospitalized</div>
+					<div>Died</div>
+				</div>
 			</div>
+			<div class="legend top"><span>+</span> % tested positive&emsp;<span>⨉</span> % hospitalized&emsp;<span>hover over markers to highlight by state</span></div>
+			<div class="legend bottom">Number of people tested per 1,000,000 of the state population</div>
 		</div>
 		<script src="./chart.js"></script>
 	</body>
