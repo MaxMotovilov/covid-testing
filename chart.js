@@ -5,7 +5,7 @@ const population = {
 	HI: 1415872, ID: 1787065, IL: 12671821, IN: 6732219, IA: 3155070, KS: 2913314, KY: 4467673, LA: 4648794, ME: 1344212, MD: 6045680, MA: 6892503,
 	MI: 9986857, MN: 5639632, MS: 2976149, MO: 6137428, MT: 1068778, NE: 1934408, NV: 3080156, NH: 1359711, NJ: 8882190, NM: 2096829, NY: 19453561,
 	NC: 10488084, ND: 762062, OH: 11689100, OK: 3956971, OR: 4217737, PA: 12801989, RI: 1059361, SC: 5148714, SD: 884659, TN: 6829174, TX: 28995881,
-	UT: 3205958, VT: 623989, VI: 8535519, WA: 7614893, WV: 1792147, WI: 5822434, WY: 578759
+	UT: 3205958, VT: 623989, VA: 8535519, WA: 7614893, WV: 1792147, WI: 5822434, WY: 578759
 }
 
 function logScale(lo, hi) {
@@ -37,18 +37,52 @@ const highlight = (
 			if(highlighted) {
 				if(state) {
 					fillPopup(state);
-					highlighted = state;
+					highlightTrail(highlighted = state);
 				} else if(!fadeout) {
-					fadeout = setTimeout( () => { document.body.className = ''; fadeout = highlighted = null; }, 2000 );
+					fadeout = setTimeout( () => {
+						document.body.className = '';
+						highlightTrail(fadeout = highlighted = null);
+					}, 2000 );
 				}
 			} else {
 				fillPopup(state);
-					highlighted = state;
-			document.body.className = 'show';
+				highlightTrail(highlighted = state);
+				document.body.className = 'show';
 			}
 		}
 	}
 )();
+
+async function loadMap() {
+	const
+		rsp = await fetch('https://upload.wikimedia.org/wikipedia/commons/2/2a/Blank_US_Map_With_Labels.svg'),
+		text = await rsp.text();
+
+	if(!rsp.ok) {
+		console.error(text);
+		throw Error(`${rsp.status} ${rsp.statusText}`);
+	}
+
+	const svg = (new DOMParser()).parseFromString(text, 'image/svg+xml');
+	document.getElementById('map').innerHTML = svg.documentElement.innerHTML;
+}
+
+function loadCss() {
+	const
+		{stateColors} = window,
+		style = document.createElement('style');
+
+	style.type = 'text/css';
+	style.innerHTML = Object.keys(stateColors).map(
+		state => `
+.pane>svg.data .${state} { stroke: #${stateColors[state]}; }
+.pane>svg.map path#${state}, .pane>svg.map path#${state}- { fill: #${stateColors[state]} !important; }`
+	).join('');
+
+	document.head.appendChild(style);
+}
+
+loadCss();
 
 let all;
 
@@ -90,6 +124,11 @@ dataset().then( ds => {
 document.getElementById('data').addEventListener('mouseover', ({target}) => highlight(findParentWithClass(target, /\btrail\s*/)));
 document.getElementById('data').addEventListener('mouseout', ({target}) => { if(findParentWithClass(target, /\btrail\s*/)) highlight(null); });
 
+loadMap().then( () => {
+	document.getElementById('map').addEventListener('click', ({target}) => highlight(mapStateId(target)));
+	document.getElementById('map').addEventListener('mouseout', ({target: {tagName}}) => { if(tagName.toLowerCase()=='svg') highlight(null); });
+} );
+
 function markers(pts, mk, state) {
 	return pts.length ?
 			pts.map(([x,y]) => `<use href="#${mk}" x="${x}" y="${y}" />`).join('')
@@ -105,7 +144,7 @@ function text([x, y], str) {
 function findParentWithClass(elt, cls_regex) {
 	while(elt && elt.tagName.toLowerCase() != 'svg')
 		if(cls_regex.test(elt.className.baseVal))
-			return elt.className.baseVal.replace(cls_regex, '');
+			return elt.className.baseVal.replace(cls_regex, '').substr(0, 2);
 		else
 			elt = elt.parentNode;
 	return null;
@@ -141,4 +180,21 @@ function barChart(data, height, ...fields) {
 			} ).join('') : '';
 		}
 	).join('') : '';
+}
+
+function mapStateId({id}) {
+	const [, state] = /^([A-Z]{2})-?$/.exec(id) || [];
+	return state;
+}
+
+function highlightTrail(setState) {
+	document.getElementById('data').querySelectorAll('g.trail').forEach(
+		elt => {
+			const [, state, hilite] = /^trail (..)( hilite)?$/.exec(elt.className.baseVal);
+			if(hilite && setState!=state)
+				elt.className.baseVal = `trail ${state}`;
+			else if(!hilite && setState==state)
+				elt.className.baseVal = `trail ${state} hilite`;
+		}
+	);
 }

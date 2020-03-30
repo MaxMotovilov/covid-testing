@@ -31,7 +31,7 @@
 				position: absolute;
 				width: 440px;
 				height: 440px;
-				right: 50px;
+				left: 250px;
 				bottom: 200px;
 				background-color: #f0f0ff;
 			}
@@ -84,7 +84,7 @@
 				font-size: 16px;
 			}
 
-			.pane>svg.data g.trail:hover {
+			.pane>svg.data g.trail:hover, .pane>svg.data g.trail.hilite {
 				stroke: blue !important;
 			}
 
@@ -100,12 +100,28 @@
 				bottom: 6px;
 			}
 
-			.pane>svg.data g.trail:hover polyline {
+			.pane>svg.data g.trail:hover polyline, .pane>svg.data g.trail.hilite polyline {
 				stroke: blue;
 			}
 
-			.pane>svg.data g.trail:hover text {
+			.pane>svg.data g.trail:hover text, .pane>svg.data g.trail.hilite text {
 				visibility: visible;
+			}
+
+			.pane>svg.map {
+				right: 20px;
+				bottom: 170px;
+				width: 321px;
+				height: 194px;
+			}
+
+			.pane>svg.map * {
+				cursor: pointer;
+			}
+
+			.pane>svg.map path:hover {
+				stroke: blue !important;
+				stroke-width: 3 !important;
 			}
 
 			.popup>div#stateLabel {
@@ -178,7 +194,7 @@
 				top: 13px;
 			}
 		</style>
-		<link rel="stylesheet" href="./states.css">
+		<script src="./states.js"></script>
 	</head>
 	<body>
 		<div class="pane">
@@ -247,6 +263,7 @@
 				</defs>
 				<g id="data" />
 			</svg>
+			<svg class="map" id="map" viewBox="0 0 962 583"></svg>
 			<div class="popup">
 				<svg class="axis" viewBox="0 0 400 400">
 					<g transform="translate(0 300)">
@@ -272,7 +289,7 @@
 					<div>Died</div>
 				</div>
 			</div>
-			<div class="legend top"><span>+</span> % tested positive&emsp;<span>⨉</span> % hospitalized&emsp;<span>hover over markers to highlight by state</span></div>
+			<div class="legend top"><span>+</span> % tested positive&emsp;<span>⨉</span> % hospitalized&emsp;<span>hover over markers or click on the map to highlight by state</span></div>
 			<div class="legend bottom">Number of people tested per 1,000,000 of the state population</div>
 		</div>
 		<script src="./chart.js"></script>
