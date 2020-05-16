@@ -17,7 +17,7 @@ function logScale(lo, hi) {
 const vScale = logScale(1, 0.0001), hScale = logScale(1, 100000);
 
 async function dataset() {
-	const rsp = await fetch('https://covidtracking.com/api/states/daily');
+	const rsp = await fetch('https://covidtracking.com/api/v1/states/daily.json');
 	if(!rsp.ok) {
 		console.error(await rsp.text());
 		throw Error(`${rsp.status} ${rsp.statusText}`);
