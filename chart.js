@@ -159,12 +159,12 @@ function fillPopup(state) {
 function barChart(data, height, ...fields) {
 	const
 		maxValue = fields.reduce( (sofar, field) => Math.max(sofar, Math.max(...data.map(x => x[field]))), 0 ),
-		width = Math.min( Math.floor(400/data.length), 9 ) - 2;
+		width = Math.max(Math.min( Math.floor(400/data.length), 9 ) - 2, 2);
 
 	return maxValue ? fields.map(
 		field => data.map( ({[field]: value}, i) => {
 			const h = height * value/maxValue;
-			return `<rect class="${field}" x="${400 - (i+1)*width}" y="${Math.min(0, h)}" width="${width-2}" height="${Math.abs(h)}" />`;
+			return `<rect class="${field}" x="${400 - (i+1)*width}" y="${Math.min(0, h)}" width="${Math.max(width-2,2)}" height="${Math.abs(h)}" />`;
 		} ).join('')
 	).join('') + fields.map(
 		field => {
